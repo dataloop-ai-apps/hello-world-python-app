@@ -1,0 +1,68 @@
+{
+    "name": "hello-world",
+    "version": "1.0.0",
+    "description": "My first Dataloop function",
+    "components": {
+        "modules": [
+            {
+                "name": "hello-world",
+                "entryPoint": "hello_world.py",
+                "className": "HelloWorld",
+                "functions": [
+                    {
+                        "name": "hello_world",
+                        "input": [
+                            {
+                                "name": "item",
+                                "type": "Item"
+                            }
+                        ],
+                        "output": [
+                            {
+                                "name": "item",
+                                "type": "Item"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "services": [
+            {
+                "name": "hello-world",
+                "moduleName": "hello-world",
+                "runtime": {
+                    "podType": "regular-xs",
+                    "concurrency": 10,
+                    "runnerImage": "python:3.10",
+                    "autoscaler": {
+                        "type": "rabbitmq",
+                        "minReplicas": 0,
+                        "maxReplicas": 2,
+                        "queueLength": 100
+                    }
+                }
+            }
+        ],
+        "triggers": [
+            {
+                "name": "process-new-items",
+                "active": true,
+                "type": "Event",
+                "namespace": "services.hello-world",
+                "spec": {
+                    "filter": {
+                        "metadata.system.mimetype": "image/*"
+                    },
+                    "actions": ["Created"],
+                    "resource": "Item",
+                    "executionMode": "Once",
+                    "operation": {
+                        "type": "function",
+                        "functionName": "hello_world"
+                    }
+                }
+            }
+        ]
+    }
+}
